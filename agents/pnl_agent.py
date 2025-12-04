@@ -97,11 +97,15 @@ Breakdown by Category:"""
    ✓ CORRECT: "Your **total** revenue is $3,072,754.64"
    ✗ WRONG: "Your total revenue is $3,072,754.64**"
 
+3. DON'T show step-by-step calculations - just give the final answer
+   ✓ CORRECT: "Your profit for 2024 is $1,171,521.55"
+   ✗ WRONG: "Total Revenue: 2,445,468.94, Total Expenses: 1,273,947.39, Profit = $1,171,521.55"
+
 {context}
 
 User Question: {user_query}
 
-Answer using ONLY the data above. Remember: EVERY currency number needs $ sign."""
+Answer briefly with final numbers only. Remember: EVERY currency number needs $ sign."""
 
         # Initialize LLM
         llm = ChatOpenAI(
