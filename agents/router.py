@@ -117,5 +117,7 @@ def route_intent(state: AgentState) -> str:
         return "property_agent"
     elif intent in [Intent.TENANT_DETAILS.value, Intent.TENANT_RANKING.value]:
         return "tenant_agent"
+    elif intent == Intent.GENERAL_KNOWLEDGE.value:
+        return "general_agent"
     else:
         return "fallback"

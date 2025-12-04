@@ -409,3 +409,39 @@ def get_worst_tenants(n: int = 1) -> list[dict]:
 
     logger.info(f"Retrieved worst {n} tenants")
     return result
+
+
+def get_portfolio_stats() -> dict[str, any]:
+    """Get comprehensive portfolio statistics.
+
+    Returns:
+        Dictionary containing overall portfolio metrics.
+
+    Example:
+        >>> stats = get_portfolio_stats()
+        >>> print(f"Properties: {stats['property_count']}")
+    """
+    df = get_dataframe()
+
+    # Get revenue and expense data
+    revenue_df = df[df["ledger_type"] == LedgerType.REVENUE.value]
+    expense_df = df[df["ledger_type"] == LedgerType.EXPENSES.value]
+
+    # Filter out None values and convert to strings for years
+    years = [str(int(y)) for y in df["year"].unique() if pd.notna(y)]
+    properties = [p for p in df["property_name"].unique() if pd.notna(p)]
+    tenants = [t for t in df["tenant_name"].unique() if pd.notna(t)]
+
+    stats = {
+        "property_count": int(df["property_name"].nunique()),
+        "tenant_count": int(df["tenant_name"].nunique()),
+        "properties": sorted(properties),
+        "tenants": sorted(tenants),
+        "total_revenue": float(revenue_df["profit"].sum()),
+        "total_expenses": float(expense_df["profit"].sum()),
+        "net_pnl": float(df["profit"].sum()),
+        "years_covered": sorted(years),
+    }
+
+    logger.info(f"Portfolio stats: {stats['property_count']} properties, {stats['tenant_count']} tenants")
+    return stats

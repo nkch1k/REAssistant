@@ -18,6 +18,7 @@ Your job is to:
    - property_compare: User wants to compare two properties
    - tenant_details: User asks about a specific tenant
    - tenant_ranking: User wants top/best/worst tenants
+   - general_knowledge: User asks general questions ("how many", "list all", "overview", "what properties")
    - fallback: Query is unclear or off-topic
 
 2. Extract relevant entities:
@@ -55,6 +56,8 @@ Examples:
 - "Top 5 tenants" → {"intent": "tenant_ranking", "entities": {"limit": 5, "ranking_type": "best"}}
 - "What is my worst unit?" → {"intent": "property_details", "entities": {"ranking_type": "worst", "entity_type": "property", "limit": 1}}
 - "Worst performing tenant" → {"intent": "tenant_ranking", "entities": {"ranking_type": "worst", "limit": 1}}
+- "How many tenants do I have?" → {"intent": "general_knowledge", "entities": {}}
+- "List all properties" → {"intent": "general_knowledge", "entities": {}}
 - "What's the weather?" → {"intent": "fallback", "entities": {}}
 
 Be strict: only use the intents listed above. If unsure, use "fallback"."""

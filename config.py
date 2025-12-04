@@ -34,6 +34,7 @@ class Intent(str, Enum):
     PROPERTY_COMPARE = "property_compare"
     TENANT_DETAILS = "tenant_details"
     TENANT_RANKING = "tenant_ranking"
+    GENERAL_KNOWLEDGE = "general_knowledge"
     FALLBACK = "fallback"
 
 

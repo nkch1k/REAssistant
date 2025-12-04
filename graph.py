@@ -10,6 +10,7 @@ from typing import Any
 from langgraph.graph import END, StateGraph
 
 from agents.fallback import fallback_node
+from agents.general_agent import general_agent_node
 from agents.pnl_agent import pnl_agent_node
 from agents.property_agent import property_agent_node
 from agents.router import route_intent, router_node
@@ -43,6 +44,7 @@ def create_graph() -> StateGraph:
     workflow.add_node("pnl_agent", pnl_agent_node)
     workflow.add_node("property_agent", property_agent_node)
     workflow.add_node("tenant_agent", tenant_agent_node)
+    workflow.add_node("general_agent", general_agent_node)
     workflow.add_node("fallback", fallback_node)
 
     # Set entry point
@@ -56,6 +58,7 @@ def create_graph() -> StateGraph:
             "pnl_agent": "pnl_agent",
             "property_agent": "property_agent",
             "tenant_agent": "tenant_agent",
+            "general_agent": "general_agent",
             "fallback": "fallback",
         },
     )
@@ -64,6 +67,7 @@ def create_graph() -> StateGraph:
     workflow.add_edge("pnl_agent", END)
     workflow.add_edge("property_agent", END)
     workflow.add_edge("tenant_agent", END)
+    workflow.add_edge("general_agent", END)
     workflow.add_edge("fallback", END)
 
     logger.info("Graph created successfully")
