@@ -109,12 +109,20 @@ def property_agent_node(state: AgentState) -> dict[str, Any]:
 
 User Question: {user_query}
 
-IMPORTANT FORMATTING RULES:
-- Always format currency as $X,XXX.XX (with dollar sign and commas)
-- NEVER use markdown ** inside currency values
-- Use markdown ** only for emphasis on TEXT, not numbers
-- Keep response brief and direct
-- If comparing properties, show the comparison clearly
+CRITICAL FORMATTING RULES - DO NOT DEVIATE:
+1. Currency values: Write as plain text with $ sign, NO markdown formatting
+   ✓ CORRECT: "P&L of $850,567.42"
+   ✗ WRONG: "P&L of $850,567.42**" or "P&L of **$850,567.42**"
+
+2. Numbers: NEVER put ** before or after any number
+   ✓ CORRECT: "Building 120 with a P&L of $850,567.42"
+   ✗ WRONG: "Building 120 with a P&L of $850,567.42**"
+
+3. Text emphasis: Use ** only around WORDS, never numbers
+   ✓ CORRECT: "Your **best** property is Building 120"
+   ✗ WRONG: "Your best property is **Building 120 with $850,567.42**"
+
+Keep response brief and direct. If comparing properties, show comparison clearly.
 
 Provide a clear, concise answer using ONLY the data above."""
 

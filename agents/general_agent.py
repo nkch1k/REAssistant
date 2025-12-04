@@ -62,11 +62,20 @@ def general_agent_node(state: AgentState) -> dict[str, Any]:
 
 User Question: {user_query}
 
-IMPORTANT FORMATTING RULES:
-- Always format currency as $X,XXX.XX (with dollar sign and commas)
-- NEVER use markdown ** inside currency values
-- Use markdown ** only for emphasis on TEXT, not numbers
-- Keep response brief and direct
+CRITICAL FORMATTING RULES - DO NOT DEVIATE:
+1. Currency values: Write as plain text with $ sign, NO markdown formatting
+   ✓ CORRECT: "Total revenue of $5,000,000.00"
+   ✗ WRONG: "Total revenue of $5,000,000.00**" or "Total revenue of **$5,000,000.00**"
+
+2. Numbers: NEVER put ** before or after any number
+   ✓ CORRECT: "You have 18 tenants across 6 properties"
+   ✗ WRONG: "You have **18** tenants across **6** properties"
+
+3. Text emphasis: Use ** only around WORDS, never numbers
+   ✓ CORRECT: "Your portfolio has **strong** performance"
+   ✗ WRONG: "Your portfolio has **18 tenants**"
+
+Keep response brief and direct.
 
 Provide a clear, concise answer using ONLY the data above."""
 

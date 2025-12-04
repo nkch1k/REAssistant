@@ -91,13 +91,20 @@ Breakdown by Category:"""
 
 User Question: {user_query}
 
-IMPORTANT FORMATTING RULES:
-- Always format currency as $X,XXX.XX (with dollar sign and commas)
-- NEVER use markdown ** inside currency values
-- Use markdown ** only for emphasis on TEXT, not numbers
-- Keep response brief and direct
-- If asked about biggest/smallest expenses or revenue, identify and highlight them
-- If asked for comparisons or trends, explain based on the data provided
+CRITICAL FORMATTING RULES - DO NOT DEVIATE:
+1. Currency values: Write as plain text with $ sign, NO markdown formatting
+   ✓ CORRECT: "Total P&L of $1,234,567.89"
+   ✗ WRONG: "Total P&L of $1,234,567.89**" or "Total P&L of **$1,234,567.89**"
+
+2. Numbers: NEVER put ** before or after any number
+   ✓ CORRECT: "Your biggest expense is Utilities at $50,000.00"
+   ✗ WRONG: "Your biggest expense is Utilities at $50,000.00**"
+
+3. Text emphasis: Use ** only around WORDS, never numbers
+   ✓ CORRECT: "Your **biggest** expense is Utilities"
+   ✗ WRONG: "Your biggest expense is **Utilities at $50,000.00**"
+
+Keep response brief and direct. If asked about biggest/smallest expenses, identify them clearly.
 
 Provide a clear, concise answer using ONLY the data above."""
 

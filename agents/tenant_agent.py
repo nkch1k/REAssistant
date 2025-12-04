@@ -102,12 +102,20 @@ def tenant_agent_node(state: AgentState) -> dict[str, Any]:
 
 User Question: {user_query}
 
-IMPORTANT FORMATTING RULES:
-- Always format currency as $X,XXX.XX (with dollar sign and commas)
-- NEVER use markdown ** inside currency values
-- Use markdown ** only for emphasis on TEXT, not numbers
-- Keep response brief and direct
-- If ranking or comparing tenants, show the comparison clearly
+CRITICAL FORMATTING RULES - DO NOT DEVIATE:
+1. Currency values: Write as plain text with $ sign, NO markdown formatting
+   ✓ CORRECT: "Revenue of $250,000.00"
+   ✗ WRONG: "Revenue of $250,000.00**" or "Revenue of **$250,000.00**"
+
+2. Numbers: NEVER put ** before or after any number
+   ✓ CORRECT: "Tenant 8 with revenue of $250,000.00"
+   ✗ WRONG: "Tenant 8 with revenue of $250,000.00**"
+
+3. Text emphasis: Use ** only around WORDS, never numbers
+   ✓ CORRECT: "Your **best** tenant is Tenant 8"
+   ✗ WRONG: "Your best tenant is **Tenant 8 with $250,000.00**"
+
+Keep response brief and direct. If ranking tenants, show comparison clearly.
 
 Provide a clear, concise answer using ONLY the data above."""
 
