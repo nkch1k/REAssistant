@@ -15,7 +15,6 @@ Your job is to:
    - pnl_summary: User wants total P&L for a period
    - pnl_breakdown: User wants expense/revenue breakdown
    - property_details: User asks about properties (specific, rankings, top/bottom, best/worst, middle, comparisons)
-   - property_compare: DEPRECATED - use property_details instead
    - tenant_details: User asks about a specific tenant
    - tenant_ranking: User asks about tenants (rankings, top/bottom, best/worst)
    - general_knowledge: User asks general questions ("how many", "list all", "overview")

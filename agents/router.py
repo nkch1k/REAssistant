@@ -113,7 +113,7 @@ def route_intent(state: AgentState) -> str:
     # Map intents to agent nodes
     if intent in [Intent.PNL_SUMMARY.value, Intent.PNL_BREAKDOWN.value]:
         return "pnl_agent"
-    elif intent in [Intent.PROPERTY_DETAILS.value, Intent.PROPERTY_COMPARE.value]:
+    elif intent == Intent.PROPERTY_DETAILS.value:
         return "property_agent"
     elif intent in [Intent.TENANT_DETAILS.value, Intent.TENANT_RANKING.value]:
         return "tenant_agent"

@@ -151,8 +151,7 @@ START -> router -> [conditional routing] -> agent -> END
 |--------|-------------|---------|
 | `pnl_summary` | Total P&L for period | "Total P&L for 2024" |
 | `pnl_breakdown` | Expense/revenue breakdown | "Show expense breakdown" |
-| `property_details` | Specific property info | "How is Building 180 doing?" |
-| `property_compare` | Compare properties | "Compare Building 17 vs 120" |
+| `property_details` | Property info & comparisons | "How is Building 180 doing?" or "Compare Building 17 vs 120" |
 | `tenant_details` | Tenant revenue | "Revenue from Tenant 8" |
 | `tenant_ranking` | Top tenants | "Top 5 tenants" |
 | `general_knowledge` | General portfolio queries | "How many tenants?" |
@@ -304,7 +303,7 @@ Solution: streamlit run app.py --server.port 8502
 ## Performance Considerations
 
 - **Data Loading**: Singleton pattern loads once
-- **LLM Calls**: Only router and general agent use LLM
+- **LLM Calls**: Router + all agents (pnl, property, tenant, general) use LLM for flexible responses
 - **Caching**: Pandas operations are fast on 3,924 rows
 - **Fuzzy Matching**: rapidfuzz is highly optimized
 

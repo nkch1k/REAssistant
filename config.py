@@ -31,7 +31,6 @@ class Intent(str, Enum):
     PNL_SUMMARY = "pnl_summary"
     PNL_BREAKDOWN = "pnl_breakdown"
     PROPERTY_DETAILS = "property_details"
-    PROPERTY_COMPARE = "property_compare"
     TENANT_DETAILS = "tenant_details"
     TENANT_RANKING = "tenant_ranking"
     GENERAL_KNOWLEDGE = "general_knowledge"
@@ -44,17 +43,6 @@ class LedgerType(str, Enum):
 
     EXPENSES = "expenses"
     REVENUE = "revenue"
-
-
-# Ledger Groups
-class LedgerGroup(str, Enum):
-    """Ledger group classifications."""
-
-    RENTAL_INCOME = "rental_income"
-    GENERAL_EXPENSES = "general_expenses"
-    MANAGEMENT_FEES = "management_fees"
-    TAXES_AND_INSURANCES = "taxes_and_insurances"
-    SALES_DISCOUNTS = "sales_discounts"
 
 
 # Entity Configuration

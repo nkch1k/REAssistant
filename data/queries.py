@@ -5,7 +5,7 @@ real estate data from the parquet dataset.
 """
 
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 import pandas as pd
 from rapidfuzz import fuzz, process
@@ -158,47 +158,6 @@ def get_property_pnl(name: str, year: Optional[str] = None) -> dict:
     return result
 
 
-def compare_properties(p1: str, p2: str) -> dict:
-    """Compare two properties across all metrics.
-
-    Args:
-        p1: First property name.
-        p2: Second property name.
-
-    Returns:
-        Dictionary with comparison data for both properties.
-
-    Raises:
-        ValueError: If either property not found.
-
-    Example:
-        >>> comparison = compare_properties("Building 17", "Building 120")
-    """
-    matched_p1 = fuzzy_match_property(p1)
-    matched_p2 = fuzzy_match_property(p2)
-
-    if not matched_p1:
-        raise ValueError(f"Property '{p1}' not found")
-    if not matched_p2:
-        raise ValueError(f"Property '{p2}' not found")
-
-    summary1 = get_property_summary(matched_p1)
-    summary2 = get_property_summary(matched_p2)
-
-    comparison = {
-        "property_1": summary1,
-        "property_2": summary2,
-        "difference": {
-            "total_pnl": summary1["total_pnl"] - summary2["total_pnl"],
-            "total_revenue": summary1["total_revenue"] - summary2["total_revenue"],
-            "total_expenses": summary1["total_expenses"] - summary2["total_expenses"],
-        },
-    }
-
-    logger.info(f"Compared {matched_p1} vs {matched_p2}")
-    return comparison
-
-
 def get_tenant_revenue(name: str, year: Optional[str] = None) -> float:
     """Get total revenue from a specific tenant.
 
@@ -232,42 +191,6 @@ def get_tenant_revenue(name: str, year: Optional[str] = None) -> float:
     revenue = tenant_df["profit"].sum()
     logger.info(f"Tenant {matched_name} revenue (year={year}): {revenue}")
     return float(revenue)
-
-
-def get_top_tenants(n: int = 5) -> list[dict]:
-    """Get top N tenants by total revenue.
-
-    Args:
-        n: Number of top tenants to return. Defaults to 5.
-
-    Returns:
-        List of dictionaries with tenant info, sorted by revenue descending.
-
-    Example:
-        >>> top_5 = get_top_tenants(5)
-        >>> print(top_5[0]["tenant_name"])
-    """
-    df = get_dataframe()
-    revenue_df = df[df["ledger_type"] == LedgerType.REVENUE.value]
-
-    tenant_revenue = (
-        revenue_df.groupby("tenant_name")["profit"]
-        .sum()
-        .sort_values(ascending=False)
-        .head(n)
-    )
-
-    result = [
-        {
-            "tenant_name": tenant,
-            "total_revenue": float(revenue),
-            "rank": idx + 1,
-        }
-        for idx, (tenant, revenue) in enumerate(tenant_revenue.items())
-    ]
-
-    logger.info(f"Retrieved top {n} tenants")
-    return result
 
 
 def fuzzy_match_property(query: str) -> Optional[str]:
@@ -340,41 +263,6 @@ def fuzzy_match_tenant(query: str) -> Optional[str]:
     return None
 
 
-def get_worst_properties(n: int = 1) -> list[dict]:
-    """Get worst performing properties by P&L.
-
-    Args:
-        n: Number of worst properties to return. Defaults to 1.
-
-    Returns:
-        List of dictionaries with property info, sorted by P&L ascending.
-
-    Example:
-        >>> worst = get_worst_properties(1)
-        >>> print(worst[0]["property_name"])
-    """
-    df = get_dataframe()
-
-    property_pnl = (
-        df.groupby("property_name")["profit"]
-        .sum()
-        .sort_values(ascending=True)
-        .head(n)
-    )
-
-    result = [
-        {
-            "property_name": prop,
-            "total_pnl": float(pnl),
-            "rank": idx + 1,
-        }
-        for idx, (prop, pnl) in enumerate(property_pnl.items())
-    ]
-
-    logger.info(f"Retrieved worst {n} properties")
-    return result
-
-
 def get_all_properties_with_pnl() -> list[dict]:
     """Get all properties with their P&L data sorted by P&L descending.
 
@@ -409,42 +297,6 @@ def get_all_properties_with_pnl() -> list[dict]:
     return result
 
 
-def get_worst_tenants(n: int = 1) -> list[dict]:
-    """Get worst tenants by revenue (lowest revenue).
-
-    Args:
-        n: Number of worst tenants to return. Defaults to 1.
-
-    Returns:
-        List of dictionaries with tenant info, sorted by revenue ascending.
-
-    Example:
-        >>> worst = get_worst_tenants(1)
-        >>> print(worst[0]["tenant_name"])
-    """
-    df = get_dataframe()
-    revenue_df = df[df["ledger_type"] == LedgerType.REVENUE.value]
-
-    tenant_revenue = (
-        revenue_df.groupby("tenant_name")["profit"]
-        .sum()
-        .sort_values(ascending=True)
-        .head(n)
-    )
-
-    result = [
-        {
-            "tenant_name": tenant,
-            "total_revenue": float(revenue),
-            "rank": idx + 1,
-        }
-        for idx, (tenant, revenue) in enumerate(tenant_revenue.items())
-    ]
-
-    logger.info(f"Retrieved worst {n} tenants")
-    return result
-
-
 def get_all_tenants_with_revenue() -> list[dict]:
     """Get all tenants with their revenue data sorted by revenue descending.
 
@@ -474,7 +326,7 @@ def get_all_tenants_with_revenue() -> list[dict]:
     return result
 
 
-def get_portfolio_stats() -> dict[str, any]:
+def get_portfolio_stats() -> dict[str, Any]:
     """Get comprehensive portfolio statistics.
 
     Returns:
