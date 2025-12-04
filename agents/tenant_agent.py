@@ -10,7 +10,7 @@ from typing import Any
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 
-from config import ERROR_TENANT_NOT_FOUND, OPENAI_API_KEY, OPENAI_MODEL
+from config import ERROR_TENANT_NOT_FOUND, OPENAI_MODEL
 from data.queries import (
     fuzzy_match_tenant,
     get_all_tenants_with_revenue,
@@ -102,14 +102,18 @@ def tenant_agent_node(state: AgentState) -> dict[str, Any]:
 
 User Question: {user_query}
 
-Provide a clear, concise answer using ONLY the data above.
-Format currency values with $ and commas. Keep response brief and direct.
-If ranking or comparing tenants, show the comparison clearly."""
+IMPORTANT FORMATTING RULES:
+- Always format currency as $X,XXX.XX (with dollar sign and commas)
+- NEVER use markdown ** inside currency values
+- Use markdown ** only for emphasis on TEXT, not numbers
+- Keep response brief and direct
+- If ranking or comparing tenants, show the comparison clearly
+
+Provide a clear, concise answer using ONLY the data above."""
 
         # Initialize LLM
         llm = ChatOpenAI(
             model=OPENAI_MODEL,
-            api_key=OPENAI_API_KEY,
             temperature=0,
         )
 

@@ -10,7 +10,7 @@ from typing import Any
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 
-from config import ERROR_NO_DATA, OPENAI_API_KEY, OPENAI_MODEL
+from config import ERROR_NO_DATA, OPENAI_MODEL
 from data.queries import get_pnl_breakdown, get_total_pnl
 from state import AgentState
 
@@ -91,15 +91,19 @@ Breakdown by Category:"""
 
 User Question: {user_query}
 
-Provide a clear, concise answer using ONLY the data above.
-Format currency values with $ and commas. Keep response brief and direct.
-If asked about biggest/smallest expenses or revenue, identify and highlight them.
-If asked for comparisons or trends, explain based on the data provided."""
+IMPORTANT FORMATTING RULES:
+- Always format currency as $X,XXX.XX (with dollar sign and commas)
+- NEVER use markdown ** inside currency values
+- Use markdown ** only for emphasis on TEXT, not numbers
+- Keep response brief and direct
+- If asked about biggest/smallest expenses or revenue, identify and highlight them
+- If asked for comparisons or trends, explain based on the data provided
+
+Provide a clear, concise answer using ONLY the data above."""
 
         # Initialize LLM
         llm = ChatOpenAI(
             model=OPENAI_MODEL,
-            api_key=OPENAI_API_KEY,
             temperature=0,
         )
 

@@ -11,7 +11,7 @@ from typing import Any
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
-from config import OPENAI_API_KEY, OPENAI_MODEL, Intent
+from config import OPENAI_MODEL, Intent
 from prompts.templates import ROUTER_SYSTEM_PROMPT, ROUTER_USER_TEMPLATE
 from state import AgentState
 
@@ -43,7 +43,6 @@ def router_node(state: AgentState) -> dict[str, Any]:
         # Initialize LLM
         llm = ChatOpenAI(
             model=OPENAI_MODEL,
-            api_key=OPENAI_API_KEY,
             temperature=0,
         )
 

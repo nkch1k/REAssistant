@@ -34,6 +34,10 @@ IMPORTANT:
 - "worst unit/property" → {"intent": "property_details", "entities": {"ranking_type": "worst", "entity_type": "property"}}
 - "worst tenant" → {"intent": "tenant_ranking", "entities": {"ranking_type": "worst", "limit": 1}}
 - "best performing building" → {"intent": "property_details", "entities": {"ranking_type": "best", "entity_type": "property"}}
+- "best one" / "the best" → {"intent": "property_details", "entities": {"ranking_type": "best", "limit": 1}}
+- "this year" / "current year" → extract as {"year": "2024"}
+- "all properties" → {"intent": "general_knowledge"}
+- Short questions like "and the best one?" → infer from context (property or tenant)
 
 Return your response as valid JSON with this structure:
 {

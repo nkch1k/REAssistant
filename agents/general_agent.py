@@ -10,7 +10,7 @@ from typing import Any
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 
-from config import OPENAI_API_KEY, OPENAI_MODEL
+from config import OPENAI_MODEL
 from data.queries import get_portfolio_stats
 from state import AgentState
 
@@ -62,13 +62,17 @@ def general_agent_node(state: AgentState) -> dict[str, Any]:
 
 User Question: {user_query}
 
-Provide a clear, concise answer using ONLY the data above.
-Format currency values with $ and commas. Keep response brief and direct."""
+IMPORTANT FORMATTING RULES:
+- Always format currency as $X,XXX.XX (with dollar sign and commas)
+- NEVER use markdown ** inside currency values
+- Use markdown ** only for emphasis on TEXT, not numbers
+- Keep response brief and direct
+
+Provide a clear, concise answer using ONLY the data above."""
 
         # Initialize LLM
         llm = ChatOpenAI(
             model=OPENAI_MODEL,
-            api_key=OPENAI_API_KEY,
             temperature=0,
         )
 

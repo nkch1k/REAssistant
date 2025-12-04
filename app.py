@@ -9,8 +9,11 @@ from datetime import datetime
 
 import streamlit as st
 
+# Load environment variables first
+from dotenv import load_dotenv
+load_dotenv()
+
 from config import (
-    OPENAI_API_KEY,
     STREAMLIT_LAYOUT,
     STREAMLIT_PAGE_ICON,
     STREAMLIT_PAGE_TITLE,
@@ -115,7 +118,8 @@ def main() -> None:
     )
 
     # Check API key
-    if not OPENAI_API_KEY:
+    import os
+    if not os.getenv("OPENAI_API_KEY"):
         st.error(
             "OpenAI API key not found. Please set OPENAI_API_KEY environment variable."
         )
