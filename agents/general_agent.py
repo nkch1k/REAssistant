@@ -63,17 +63,17 @@ def general_agent_node(state: AgentState) -> dict[str, Any]:
 User Question: {user_query}
 
 CRITICAL FORMATTING RULES - DO NOT DEVIATE:
-1. Currency values: Write as plain text with $ sign, NO markdown formatting
-   ✓ CORRECT: "Total revenue of $5,000,000.00"
-   ✗ WRONG: "Total revenue of $5,000,000.00**" or "Total revenue of **$5,000,000.00**"
+1. Currency MUST have $ sign and commas, NO markdown ** around or inside numbers
+   ✓ CORRECT: "Total revenue of $3,072,754.64"
+   ✗ WRONG: "Total revenue of 3,072,754.64" (missing $)
+   ✗ WRONG: "Total revenue of $3,072,754.64**" (** after number)
+   ✗ WRONG: "**$3,072,754.64**" (** around number)
 
-2. Numbers: NEVER put ** before or after any number
+2. You can emphasize WORDS with **, but NEVER put ** around/near numbers
    ✓ CORRECT: "You have 18 tenants across 6 properties"
-   ✗ WRONG: "You have **18** tenants across **6** properties"
-
-3. Text emphasis: Use ** only around WORDS, never numbers
    ✓ CORRECT: "Your portfolio has **strong** performance"
-   ✗ WRONG: "Your portfolio has **18 tenants**"
+   ✗ WRONG: "You have **18** tenants" (** around number)
+   ✗ WRONG: "**6 properties**" (** around number)
 
 Keep response brief and direct.
 

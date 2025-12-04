@@ -110,17 +110,17 @@ def property_agent_node(state: AgentState) -> dict[str, Any]:
 User Question: {user_query}
 
 CRITICAL FORMATTING RULES - DO NOT DEVIATE:
-1. Currency values: Write as plain text with $ sign, NO markdown formatting
+1. Currency MUST have $ sign and commas, NO markdown ** around or inside numbers
    ✓ CORRECT: "P&L of $850,567.42"
-   ✗ WRONG: "P&L of $850,567.42**" or "P&L of **$850,567.42**"
+   ✗ WRONG: "P&L of 850,567.42" (missing $)
+   ✗ WRONG: "P&L of $850,567.42**" (** after number)
+   ✗ WRONG: "**$850,567.42**" (** around number)
 
-2. Numbers: NEVER put ** before or after any number
-   ✓ CORRECT: "Building 120 with a P&L of $850,567.42"
-   ✗ WRONG: "Building 120 with a P&L of $850,567.42**"
-
-3. Text emphasis: Use ** only around WORDS, never numbers
-   ✓ CORRECT: "Your **best** property is Building 120"
-   ✗ WRONG: "Your best property is **Building 120 with $850,567.42**"
+2. You can emphasize WORDS with **, but NEVER put ** around/near numbers
+   ✓ CORRECT: "Your **best** property is Building 120 with a P&L of $850,567.42"
+   ✓ CORRECT: "Your **worst** property is Building 17 with a P&L of $352,566.81"
+   ✗ WRONG: "Your best property is Building 120 with a P&L of 850,567.42" (missing $)
+   ✗ WRONG: "Building 120 with $850,567.42**" (** after number)
 
 Keep response brief and direct. If comparing properties, show comparison clearly.
 
