@@ -38,6 +38,7 @@ IMPORTANT:
 - "this year" / "current year" → extract as {"year": "2024"}
 - "all properties" → {"intent": "general_knowledge"}
 - Short questions like "and the best one?" → infer from context (property or tenant)
+- "what is my revenue" / "what is my profit" / "my revenue" / "my profit" → {"intent": "pnl_summary", "entities": {}}
 
 Return your response as valid JSON with this structure:
 {
@@ -54,6 +55,8 @@ Return your response as valid JSON with this structure:
 
 Examples:
 - "What's the P&L for 2024?" → {"intent": "pnl_summary", "entities": {"year": "2024"}}
+- "What is my revenue?" → {"intent": "pnl_summary", "entities": {}}
+- "What is my profit 2024?" → {"intent": "pnl_summary", "entities": {"year": "2024"}}
 - "Show Building 180 performance" → {"intent": "property_details", "entities": {"property_name": "Building 180"}}
 - "Compare Building 17 and 120" → {"intent": "property_details", "entities": {}}
 - "Top 5 tenants" → {"intent": "tenant_ranking", "entities": {"limit": 5, "ranking_type": "best"}}

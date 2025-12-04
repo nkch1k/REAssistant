@@ -87,26 +87,21 @@ Breakdown by Category:"""
             context += f"\nTotal Expenses: ${total_expenses:,.2f}"
 
         # Create prompt for LLM
-        prompt = f"""{context}
+        prompt = f"""CRITICAL FORMATTING RULES - EVERY NUMBER NEEDS $:
+1. ALL currency values MUST have $ sign - NO EXCEPTIONS
+   ✓ CORRECT: "Revenue is $2,445,468.94 and profit is $171,947.55"
+   ✗ WRONG: "Revenue is 2,445,468.94 and profit is 171,947.55" (missing $)
+   ✗ WRONG: "Revenue is $2,445,468.94 and profit is 171,947.55" (second missing $)
+
+2. NEVER put ** around or after numbers
+   ✓ CORRECT: "Your **total** revenue is $3,072,754.64"
+   ✗ WRONG: "Your total revenue is $3,072,754.64**"
+
+{context}
 
 User Question: {user_query}
 
-CRITICAL FORMATTING RULES - DO NOT DEVIATE:
-1. Currency MUST have $ sign and commas, NO markdown ** around or inside numbers
-   ✓ CORRECT: "Total P&L of $1,234,567.89"
-   ✗ WRONG: "Total P&L of 1,234,567.89" (missing $)
-   ✗ WRONG: "Total P&L of $1,234,567.89**" (** after number)
-   ✗ WRONG: "**$1,234,567.89**" (** around number)
-
-2. You can emphasize WORDS with **, but NEVER put ** around/near numbers
-   ✓ CORRECT: "Your **biggest** expense is Utilities at $50,000.00"
-   ✓ CORRECT: "Your **total** revenue is $3,072,754.64"
-   ✗ WRONG: "Your biggest expense is Utilities at 50,000.00" (missing $)
-   ✗ WRONG: "Utilities at $50,000.00**" (** after number)
-
-Keep response brief and direct. If asked about biggest/smallest expenses, identify them clearly.
-
-Provide a clear, concise answer using ONLY the data above."""
+Answer using ONLY the data above. Remember: EVERY currency number needs $ sign."""
 
         # Initialize LLM
         llm = ChatOpenAI(

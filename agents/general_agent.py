@@ -58,26 +58,21 @@ def general_agent_node(state: AgentState) -> dict[str, Any]:
 - Years with Data: {years_str}"""
 
         # Create prompt for LLM
-        prompt = f"""{context}
+        prompt = f"""CRITICAL FORMATTING RULES - EVERY NUMBER NEEDS $:
+1. ALL currency values MUST have $ sign - NO EXCEPTIONS
+   ✓ CORRECT: "Revenue is $3,072,754.64 and P&L is $1,533,331.87"
+   ✗ WRONG: "Revenue is 3,072,754.64 and P&L is 1,533,331.87" (missing $)
+   ✗ WRONG: "Revenue is $3,072,754.64 and P&L is 1,533,331.87" (second missing $)
+
+2. NEVER put ** around or after numbers
+   ✓ CORRECT: "Your portfolio has **strong** performance"
+   ✗ WRONG: "You have **18** tenants"
+
+{context}
 
 User Question: {user_query}
 
-CRITICAL FORMATTING RULES - DO NOT DEVIATE:
-1. Currency MUST have $ sign and commas, NO markdown ** around or inside numbers
-   ✓ CORRECT: "Total revenue of $3,072,754.64"
-   ✗ WRONG: "Total revenue of 3,072,754.64" (missing $)
-   ✗ WRONG: "Total revenue of $3,072,754.64**" (** after number)
-   ✗ WRONG: "**$3,072,754.64**" (** around number)
-
-2. You can emphasize WORDS with **, but NEVER put ** around/near numbers
-   ✓ CORRECT: "You have 18 tenants across 6 properties"
-   ✓ CORRECT: "Your portfolio has **strong** performance"
-   ✗ WRONG: "You have **18** tenants" (** around number)
-   ✗ WRONG: "**6 properties**" (** around number)
-
-Keep response brief and direct.
-
-Provide a clear, concise answer using ONLY the data above."""
+Answer using ONLY the data above. Remember: EVERY currency number needs $ sign."""
 
         # Initialize LLM
         llm = ChatOpenAI(

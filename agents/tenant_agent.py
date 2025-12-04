@@ -98,26 +98,21 @@ def tenant_agent_node(state: AgentState) -> dict[str, Any]:
             data = {"all_tenants": all_tenants}
 
         # Create prompt for LLM
-        prompt = f"""{context}
+        prompt = f"""CRITICAL FORMATTING RULES - EVERY NUMBER NEEDS $:
+1. ALL currency values MUST have $ sign - NO EXCEPTIONS
+   ✓ CORRECT: "Best is Tenant 7 with $880,535.66, worst is Tenant 6 with $7,586.64"
+   ✗ WRONG: "Best is Tenant 7 with 880,535.66, worst is Tenant 6 with 7,586.64" (missing $)
+   ✗ WRONG: "Best is Tenant 7 with $880,535.66, worst is Tenant 6 with 7,586.64" (second missing $)
+
+2. NEVER put ** around or after numbers
+   ✓ CORRECT: "Your **best** tenant is Tenant 7"
+   ✗ WRONG: "Tenant 7 with $880,535.66**"
+
+{context}
 
 User Question: {user_query}
 
-CRITICAL FORMATTING RULES - DO NOT DEVIATE:
-1. Currency MUST have $ sign and commas, NO markdown ** around or inside numbers
-   ✓ CORRECT: "Revenue of $250,000.00"
-   ✗ WRONG: "Revenue of 250,000.00" (missing $)
-   ✗ WRONG: "Revenue of $250,000.00**" (** after number)
-   ✗ WRONG: "**$250,000.00**" (** around number)
-
-2. You can emphasize WORDS with **, but NEVER put ** around/near numbers
-   ✓ CORRECT: "Your **best** tenant is Tenant 7 with revenue of $880,535.66"
-   ✓ CORRECT: "Your **worst** tenant is Tenant 6 with revenue of $7,586.64"
-   ✗ WRONG: "Your best tenant is Tenant 7 with revenue of 880,535.66" (missing $)
-   ✗ WRONG: "Tenant 7 with revenue of $880,535.66**" (** after number)
-
-Keep response brief and direct. If ranking tenants, show comparison clearly.
-
-Provide a clear, concise answer using ONLY the data above."""
+Answer using ONLY the data above. Remember: EVERY currency number needs $ sign."""
 
         # Initialize LLM
         llm = ChatOpenAI(
