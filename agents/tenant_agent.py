@@ -1,17 +1,20 @@
-"""Tenant agent for tenant-related queries.
+"""Tenant agent for tenant-related queries with LLM-based response generation.
 
-This module handles tenant revenue queries and rankings.
+This module handles all tenant queries using LLM to interpret complex requests
+and generate flexible responses.
 """
 
 import logging
 from typing import Any
 
-from config import ERROR_TENANT_NOT_FOUND, Intent
+from langchain_core.messages import HumanMessage
+from langchain_openai import ChatOpenAI
+
+from config import ERROR_TENANT_NOT_FOUND, OPENAI_API_KEY, OPENAI_MODEL
 from data.queries import (
     fuzzy_match_tenant,
+    get_all_tenants_with_revenue,
     get_tenant_revenue,
-    get_top_tenants,
-    get_worst_tenants,
 )
 from state import AgentState
 
@@ -19,42 +22,33 @@ logger = logging.getLogger(__name__)
 
 
 def tenant_agent_node(state: AgentState) -> dict[str, Any]:
-    """Tenant agent node for handling tenant queries.
+    """Tenant agent node with LLM-based query handling.
 
-    This node processes tenant queries by:
-    1. Extracting tenant names from entities
-    2. Querying the data layer with fuzzy matching
-    3. Formatting a user-friendly response
+    This node handles tenant queries by:
+    1. Retrieving relevant tenant data
+    2. Using LLM to understand the query and generate response
+    3. Supporting any variation of tenant-related questions
 
     Args:
-        state: Current agent state with intent and entities.
+        state: Current agent state with user_query and entities.
 
     Returns:
         State update dict with data and response fields.
 
     Example:
-        >>> state = {
-        ...     "intent": "tenant_details",
-        ...     "entities": {"tenant_name": "Tenant 8"}
-        ... }
+        >>> state = {"user_query": "Show me top 5 tenants"}
         >>> result = tenant_agent_node(state)
     """
-    intent = state["intent"]
+    user_query = state["user_query"]
     entities = state["entities"]
-    logger.info(f"Tenant agent processing intent: {intent}")
+    logger.info(f"Tenant agent processing query: {user_query}")
 
     try:
-        if intent == Intent.TENANT_DETAILS.value:
-            # Get tenant name
-            tenant_name = entities.get("tenant_name")
-            if not tenant_name:
-                return {
-                    "data": {},
-                    "response": "Please specify a tenant name.",
-                    "error": "Missing tenant_name",
-                }
+        # Check if querying a specific tenant
+        tenant_name = entities.get("tenant_name")
 
-            # Check if tenant exists (with fuzzy matching)
+        if tenant_name:
+            # Specific tenant query
             matched_name = fuzzy_match_tenant(tenant_name)
             if not matched_name:
                 return {
@@ -67,57 +61,61 @@ def tenant_agent_node(state: AgentState) -> dict[str, Any]:
             year = entities.get("year")
             revenue = get_tenant_revenue(matched_name, year=year)
 
+            # Create context for LLM
+            context = f"""Tenant Data:
+- Tenant: {matched_name}
+- Total Revenue: ${revenue:,.2f}"""
+
+            if year:
+                context += f"\n- Year: {year}"
+
             data = {
                 "tenant_name": matched_name,
-                "revenue": revenue,
+                "total_revenue": revenue,
                 "year": year,
             }
 
-            response = _format_tenant_details(
-                matched_name, revenue, year, tenant_name
-            )
-
-        elif intent == Intent.TENANT_RANKING.value:
-            # Get limit
-            limit = entities.get("limit", 5)
-            try:
-                limit = int(limit)
-            except (ValueError, TypeError):
-                limit = 5
-
-            # Check if worst ranking
-            ranking_type = entities.get("ranking_type", "best")
-
-            if ranking_type == "worst":
-                # Get worst tenants
-                tenants = get_worst_tenants(n=limit)
-                if not tenants:
-                    return {
-                        "data": {},
-                        "response": "No tenant data available.",
-                        "error": None,
-                    }
-                data = {"worst_tenants": tenants, "limit": limit}
-                response = _format_worst_tenants(tenants)
-            else:
-                # Get top tenants
-                tenants = get_top_tenants(n=limit)
-                if not tenants:
-                    return {
-                        "data": {},
-                        "response": "No tenant data available.",
-                        "error": None,
-                    }
-                data = {"top_tenants": tenants, "limit": limit}
-                response = _format_tenant_ranking(tenants)
-
         else:
-            logger.warning(f"Unexpected intent in tenant agent: {intent}")
-            return {
-                "data": {},
-                "response": "Unable to process tenant query.",
-                "error": f"Unexpected intent: {intent}",
-            }
+            # General tenant query (rankings, comparisons, etc.)
+            all_tenants = get_all_tenants_with_revenue()
+
+            if not all_tenants:
+                return {
+                    "data": {},
+                    "response": "No tenant data available.",
+                    "error": None,
+                }
+
+            # Format all tenants for LLM
+            tenants_list = []
+            for tenant in all_tenants:
+                tenants_list.append(
+                    f"{tenant['rank']}. {tenant['tenant_name']}: "
+                    f"Revenue=${tenant['total_revenue']:,.2f}"
+                )
+
+            context = "All Tenants (ranked by revenue):\n" + "\n".join(tenants_list)
+            data = {"all_tenants": all_tenants}
+
+        # Create prompt for LLM
+        prompt = f"""{context}
+
+User Question: {user_query}
+
+Provide a clear, concise answer using ONLY the data above.
+Format currency values with $ and commas. Keep response brief and direct.
+If ranking or comparing tenants, show the comparison clearly."""
+
+        # Initialize LLM
+        llm = ChatOpenAI(
+            model=OPENAI_MODEL,
+            api_key=OPENAI_API_KEY,
+            temperature=0,
+        )
+
+        # Get LLM response
+        response_message = llm.invoke([HumanMessage(content=prompt)])
+        response = response_message.content
 
         logger.info("Tenant agent completed successfully")
         return {
@@ -140,75 +138,3 @@ def tenant_agent_node(state: AgentState) -> dict[str, Any]:
             "response": f"Error processing tenant query: {str(e)}",
             "error": str(e),
         }
-
-
-def _format_tenant_details(
-    matched_name: str, revenue: float, year: str | None, original_query: str
-) -> str:
-    """Format tenant details response.
-
-    Args:
-        matched_name: The matched tenant name.
-        revenue: Total revenue from tenant.
-        year: Year filter if applicable.
-        original_query: Original query from user.
-
-    Returns:
-        Formatted response string.
-    """
-    response = ""
-
-    # Add fuzzy match notice if needed
-    if matched_name.lower() != original_query.lower():
-        response += f"_Showing results for: {matched_name}_\n\n"
-
-    response += f"**{matched_name}**\n\n"
-
-    period = f" in {year}" if year else " (all time)"
-    response += f"Total Revenue{period}: ${revenue:,.2f}\n"
-
-    return response
-
-
-def _format_tenant_ranking(top_tenants: list[dict]) -> str:
-    """Format tenant ranking response.
-
-    Args:
-        top_tenants: List of top tenant dictionaries.
-
-    Returns:
-        Formatted response string.
-    """
-    response = f"**Top {len(top_tenants)} Tenants by Revenue**\n\n"
-
-    for tenant in top_tenants:
-        rank = tenant["rank"]
-        name = tenant["tenant_name"]
-        revenue = tenant["total_revenue"]
-
-        response += f"{rank}. **{name}**: ${revenue:,.2f}\n"
-
-    return response
-
-
-def _format_worst_tenants(worst_tenants: list[dict]) -> str:
-    """Format worst tenants response.
-
-    Args:
-        worst_tenants: List of worst tenant dictionaries.
-
-    Returns:
-        Formatted response string.
-    """
-    if len(worst_tenants) == 1:
-        tenant = worst_tenants[0]
-        response = f"**Worst Performing Tenant**\n\n"
-        response += f"**{tenant['tenant_name']}**\n"
-        response += f"- Total Revenue: ${tenant['total_revenue']:,.2f}\n"
-        response += f"\nThis tenant has the lowest revenue among all tenants."
-    else:
-        response = f"**Bottom {len(worst_tenants)} Tenants by Revenue**\n\n"
-        for tenant in worst_tenants:
-            response += f"{tenant['rank']}. **{tenant['tenant_name']}**: ${tenant['total_revenue']:,.2f}\n"
-
-    return response

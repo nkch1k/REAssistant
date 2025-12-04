@@ -14,11 +14,11 @@ Your job is to:
 1. Classify the user's intent into one of these categories:
    - pnl_summary: User wants total P&L for a period
    - pnl_breakdown: User wants expense/revenue breakdown
-   - property_details: User asks about a specific property OR worst/best properties
-   - property_compare: User wants to compare two properties
+   - property_details: User asks about properties (specific, rankings, top/bottom, best/worst, middle, comparisons)
+   - property_compare: DEPRECATED - use property_details instead
    - tenant_details: User asks about a specific tenant
-   - tenant_ranking: User wants top/best/worst tenants
-   - general_knowledge: User asks general questions ("how many", "list all", "overview", "what properties")
+   - tenant_ranking: User asks about tenants (rankings, top/bottom, best/worst)
+   - general_knowledge: User asks general questions ("how many", "list all", "overview")
    - fallback: Query is unclear or off-topic
 
 2. Extract relevant entities:
@@ -52,10 +52,14 @@ Return your response as valid JSON with this structure:
 Examples:
 - "What's the P&L for 2024?" → {"intent": "pnl_summary", "entities": {"year": "2024"}}
 - "Show Building 180 performance" → {"intent": "property_details", "entities": {"property_name": "Building 180"}}
-- "Compare Building 17 and 120" → {"intent": "property_compare", "entities": {"comparison_properties": ["Building 17", "Building 120"]}}
+- "Compare Building 17 and 120" → {"intent": "property_details", "entities": {}}
 - "Top 5 tenants" → {"intent": "tenant_ranking", "entities": {"limit": 5, "ranking_type": "best"}}
-- "What is my worst unit?" → {"intent": "property_details", "entities": {"ranking_type": "worst", "entity_type": "property", "limit": 1}}
+- "What is my worst unit?" → {"intent": "property_details", "entities": {"ranking_type": "worst", "limit": 1}}
 - "Worst performing tenant" → {"intent": "tenant_ranking", "entities": {"ranking_type": "worst", "limit": 1}}
+- "Show me top 3 properties" → {"intent": "property_details", "entities": {"limit": 3, "ranking_type": "best"}}
+- "Best and worst property" → {"intent": "property_details", "entities": {}}
+- "Which property is in the middle" → {"intent": "property_details", "entities": {}}
+- "Compare best tenant with worst" → {"intent": "tenant_ranking", "entities": {}}
 - "How many tenants do I have?" → {"intent": "general_knowledge", "entities": {}}
 - "List all properties" → {"intent": "general_knowledge", "entities": {}}
 - "What's the weather?" → {"intent": "fallback", "entities": {}}

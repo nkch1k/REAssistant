@@ -375,6 +375,40 @@ def get_worst_properties(n: int = 1) -> list[dict]:
     return result
 
 
+def get_all_properties_with_pnl() -> list[dict]:
+    """Get all properties with their P&L data sorted by P&L descending.
+
+    Returns:
+        List of dictionaries with property info and P&L, sorted best to worst.
+
+    Example:
+        >>> all_props = get_all_properties_with_pnl()
+        >>> print(f"Best: {all_props[0]['property_name']}")
+    """
+    df = get_dataframe()
+
+    # Calculate P&L for each property
+    property_pnl = df.groupby("property_name")["profit"].sum().sort_values(ascending=False)
+
+    # Get additional details for each property
+    result = []
+    for prop_name, total_pnl in property_pnl.items():
+        prop_df = df[df["property_name"] == prop_name]
+        revenue_df = prop_df[prop_df["ledger_type"] == LedgerType.REVENUE.value]
+        expense_df = prop_df[prop_df["ledger_type"] == LedgerType.EXPENSES.value]
+
+        result.append({
+            "property_name": prop_name,
+            "total_pnl": float(total_pnl),
+            "total_revenue": float(revenue_df["profit"].sum()),
+            "total_expenses": float(expense_df["profit"].sum()),
+            "tenant_count": int(prop_df["tenant_name"].nunique()),
+        })
+
+    logger.info(f"Retrieved all {len(result)} properties with P&L")
+    return result
+
+
 def get_worst_tenants(n: int = 1) -> list[dict]:
     """Get worst tenants by revenue (lowest revenue).
 
@@ -408,6 +442,35 @@ def get_worst_tenants(n: int = 1) -> list[dict]:
     ]
 
     logger.info(f"Retrieved worst {n} tenants")
+    return result
+
+
+def get_all_tenants_with_revenue() -> list[dict]:
+    """Get all tenants with their revenue data sorted by revenue descending.
+
+    Returns:
+        List of dictionaries with tenant info and revenue, sorted best to worst.
+
+    Example:
+        >>> all_tenants = get_all_tenants_with_revenue()
+        >>> print(f"Best: {all_tenants[0]['tenant_name']}")
+    """
+    df = get_dataframe()
+    revenue_df = df[df["ledger_type"] == LedgerType.REVENUE.value]
+
+    # Calculate revenue for each tenant
+    tenant_revenue = revenue_df.groupby("tenant_name")["profit"].sum().sort_values(ascending=False)
+
+    result = [
+        {
+            "tenant_name": tenant,
+            "total_revenue": float(revenue),
+            "rank": idx + 1,
+        }
+        for idx, (tenant, revenue) in enumerate(tenant_revenue.items())
+    ]
+
+    logger.info(f"Retrieved all {len(result)} tenants with revenue")
     return result
 
 
