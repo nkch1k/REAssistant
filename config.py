@@ -85,9 +85,4 @@ STREAMLIT_LAYOUT: Final[str] = "centered"
 ERROR_PROPERTY_NOT_FOUND: Final[str] = "Property not found in the dataset."
 ERROR_TENANT_NOT_FOUND: Final[str] = "Tenant not found in the dataset."
 ERROR_NO_DATA: Final[str] = "No data available for the specified criteria."
-ERROR_INVALID_QUERY: Final[str] = "Unable to process your query. Please rephrase."
 ERROR_GENERAL: Final[str] = "An error occurred while processing your request."
-
-
-# Success Messages
-SUCCESS_FUZZY_MATCH: Final[str] = "Did you mean '{match}'?"

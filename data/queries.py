@@ -10,7 +10,7 @@ from typing import Optional
 import pandas as pd
 from rapidfuzz import fuzz, process
 
-from config import FUZZY_MATCH_THRESHOLD
+from config import FUZZY_MATCH_THRESHOLD, LedgerType
 from data.loader import get_dataframe
 
 logger = logging.getLogger(__name__)
@@ -98,8 +98,8 @@ def get_property_summary(name: str) -> dict:
     summary = {
         "property_name": matched_name,
         "total_pnl": float(prop_df["profit"].sum()),
-        "total_revenue": float(prop_df[prop_df["ledger_type"] == "revenue"]["profit"].sum()),
-        "total_expenses": float(prop_df[prop_df["ledger_type"] == "expenses"]["profit"].sum()),
+        "total_revenue": float(prop_df[prop_df["ledger_type"] == LedgerType.REVENUE.value]["profit"].sum()),
+        "total_expenses": float(prop_df[prop_df["ledger_type"] == LedgerType.EXPENSES.value]["profit"].sum()),
         "tenant_count": int(prop_df["tenant_name"].nunique()),
         "tenants": sorted(tenants_list),
     }
@@ -137,8 +137,8 @@ def get_property_pnl(name: str, year: Optional[str] = None) -> dict:
     if prop_df.empty:
         raise ValueError(f"No data for property '{matched_name}' in year {year}")
 
-    revenue_df = prop_df[prop_df["ledger_type"] == "revenue"]
-    expense_df = prop_df[prop_df["ledger_type"] == "expenses"]
+    revenue_df = prop_df[prop_df["ledger_type"] == LedgerType.REVENUE.value]
+    expense_df = prop_df[prop_df["ledger_type"] == LedgerType.EXPENSES.value]
 
     result = {
         "property_name": matched_name,
@@ -221,7 +221,7 @@ def get_tenant_revenue(name: str, year: Optional[str] = None) -> float:
 
     df = get_dataframe()
     tenant_df = df[df["tenant_name"] == matched_name]
-    tenant_df = tenant_df[tenant_df["ledger_type"] == "revenue"]
+    tenant_df = tenant_df[tenant_df["ledger_type"] == LedgerType.REVENUE.value]
 
     if year:
         tenant_df = tenant_df[tenant_df["year"] == year]
@@ -248,7 +248,7 @@ def get_top_tenants(n: int = 5) -> list[dict]:
         >>> print(top_5[0]["tenant_name"])
     """
     df = get_dataframe()
-    revenue_df = df[df["ledger_type"] == "revenue"]
+    revenue_df = df[df["ledger_type"] == LedgerType.REVENUE.value]
 
     tenant_revenue = (
         revenue_df.groupby("tenant_name")["profit"]
@@ -389,7 +389,7 @@ def get_worst_tenants(n: int = 1) -> list[dict]:
         >>> print(worst[0]["tenant_name"])
     """
     df = get_dataframe()
-    revenue_df = df[df["ledger_type"] == "revenue"]
+    revenue_df = df[df["ledger_type"] == LedgerType.REVENUE.value]
 
     tenant_revenue = (
         revenue_df.groupby("tenant_name")["profit"]
