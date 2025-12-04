@@ -7,12 +7,8 @@ breakdowns by period.
 import logging
 from typing import Any
 
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI
-
-from config import ERROR_NO_DATA, OPENAI_API_KEY, OPENAI_MODEL, Intent
+from config import ERROR_NO_DATA, Intent
 from data.queries import get_pnl_breakdown, get_total_pnl
-from prompts.templates import PNL_AGENT_PROMPT
 from state import AgentState
 
 logger = logging.getLogger(__name__)
