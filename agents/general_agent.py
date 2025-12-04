@@ -53,7 +53,7 @@ def general_agent_node(state: AgentState) -> dict[str, Any]:
 - Properties: {properties_str}
 - Number of Tenants: {stats['tenant_count']}
 - Total Revenue: ${stats['total_revenue']:,.2f}
-- Total Expenses: ${stats['total_expenses']:,.2f}
+- Total Expenses: ${abs(stats['total_expenses']):,.2f}
 - Net P&L: ${stats['net_pnl']:,.2f}
 - Years with Data: {years_str}"""
 
