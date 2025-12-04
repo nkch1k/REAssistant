@@ -1,13 +1,16 @@
-"""P&L agent for profit and loss queries.
+"""P&L agent for profit and loss queries with LLM-based response generation.
 
-This module handles all P&L related queries including summaries and
-breakdowns by period.
+This module handles all P&L queries using LLM to interpret complex requests
+and generate flexible responses.
 """
 
 import logging
 from typing import Any
 
-from config import ERROR_NO_DATA, Intent
+from langchain_core.messages import HumanMessage
+from langchain_openai import ChatOpenAI
+
+from config import ERROR_NO_DATA, OPENAI_API_KEY, OPENAI_MODEL
 from data.queries import get_pnl_breakdown, get_total_pnl
 from state import AgentState
 
@@ -15,85 +18,103 @@ logger = logging.getLogger(__name__)
 
 
 def pnl_agent_node(state: AgentState) -> dict[str, Any]:
-    """P&L agent node for handling profit and loss queries.
+    """P&L agent node with LLM-based query handling.
 
-    This node processes P&L queries by:
-    1. Extracting relevant entities (year, quarter)
-    2. Querying the data layer
-    3. Formatting a user-friendly response
+    This node handles P&L queries by:
+    1. Retrieving relevant P&L data
+    2. Using LLM to understand the query and generate response
+    3. Supporting any variation of P&L-related questions
 
     Args:
-        state: Current agent state with intent and entities.
+        state: Current agent state with user_query and entities.
 
     Returns:
         State update dict with data and response fields.
 
     Example:
-        >>> state = {
-        ...     "intent": "pnl_summary",
-        ...     "entities": {"year": "2024"}
-        ... }
+        >>> state = {"user_query": "What are my biggest expenses?"}
         >>> result = pnl_agent_node(state)
     """
-    intent = state["intent"]
+    user_query = state["user_query"]
     entities = state["entities"]
-    logger.info(f"P&L agent processing intent: {intent}")
+    logger.info(f"P&L agent processing query: {user_query}")
 
     try:
-        # Extract entities
+        # Extract time period filters
         year = entities.get("year")
         quarter = entities.get("quarter")
 
-        # Query data based on intent
-        if intent == Intent.PNL_SUMMARY.value:
-            total_pnl = get_total_pnl(year=year, quarter=quarter)
+        # Get both summary and breakdown data
+        total_pnl = get_total_pnl(year=year, quarter=quarter)
+        breakdown = get_pnl_breakdown(year=year)
 
-            if total_pnl == 0:
-                return {
-                    "data": {},
-                    "response": ERROR_NO_DATA,
-                    "error": None,
-                }
-
-            data = {
-                "total_pnl": total_pnl,
-                "year": year,
-                "quarter": quarter,
-            }
-
-            # Format response
-            period = quarter if quarter else (f"year {year}" if year else "all periods")
-            response = _format_pnl_summary(total_pnl, period)
-
-        elif intent == Intent.PNL_BREAKDOWN.value:
-            breakdown = get_pnl_breakdown(year=year)
-
-            if not breakdown:
-                return {
-                    "data": {},
-                    "response": ERROR_NO_DATA,
-                    "error": None,
-                }
-
-            data = {
-                "breakdown": breakdown,
-                "year": year,
-            }
-
-            # Format response
-            response = _format_pnl_breakdown(breakdown, year)
-
-        else:
-            logger.warning(f"Unexpected intent in P&L agent: {intent}")
+        if total_pnl == 0 and not breakdown:
             return {
                 "data": {},
-                "response": "Unable to process P&L query.",
-                "error": f"Unexpected intent: {intent}",
+                "response": ERROR_NO_DATA,
+                "error": None,
             }
 
-        logger.info(f"P&L agent completed successfully")
+        # Create context for LLM
+        period = quarter if quarter else (f"year {year}" if year else "all periods")
+
+        # Format breakdown data
+        context = f"""P&L Data for {period}:
+
+Total P&L: ${total_pnl:,.2f}
+
+Breakdown by Category:"""
+
+        # Separate revenue and expenses
+        revenue_items = []
+        expense_items = []
+
+        for category, amount in breakdown.items():
+            category_name = category.replace('_', ' ').title()
+            if amount > 0:
+                revenue_items.append(f"- {category_name}: ${amount:,.2f}")
+            else:
+                expense_items.append(f"- {category_name}: ${abs(amount):,.2f}")
+
+        if revenue_items:
+            context += "\n\nRevenue:\n" + "\n".join(revenue_items)
+            total_revenue = sum(amt for _, amt in [(c, breakdown[c]) for c in breakdown if breakdown[c] > 0])
+            context += f"\nTotal Revenue: ${total_revenue:,.2f}"
+
+        if expense_items:
+            context += "\n\nExpenses:\n" + "\n".join(expense_items)
+            total_expenses = sum(abs(amt) for _, amt in [(c, breakdown[c]) for c in breakdown if breakdown[c] < 0])
+            context += f"\nTotal Expenses: ${total_expenses:,.2f}"
+
+        # Create prompt for LLM
+        prompt = f"""{context}
+
+User Question: {user_query}
+
+Provide a clear, concise answer using ONLY the data above.
+Format currency values with $ and commas. Keep response brief and direct.
+If asked about biggest/smallest expenses or revenue, identify and highlight them.
+If asked for comparisons or trends, explain based on the data provided."""
+
+        # Initialize LLM
+        llm = ChatOpenAI(
+            model=OPENAI_MODEL,
+            api_key=OPENAI_API_KEY,
+            temperature=0,
+        )
+
+        # Get LLM response
+        response_message = llm.invoke([HumanMessage(content=prompt)])
+        response = response_message.content
+
+        logger.info("P&L agent completed successfully")
         return {
-            "data": data,
+            "data": {
+                "total_pnl": total_pnl,
+                "breakdown": breakdown,
+                "year": year,
+                "quarter": quarter,
+            },
             "response": response,
             "error": None,
         }
@@ -105,74 +126,3 @@ def pnl_agent_node(state: AgentState) -> dict[str, Any]:
             "response": f"Error processing P&L query: {str(e)}",
             "error": str(e),
         }
-
-
-def _format_pnl_summary(total_pnl: float, period: str) -> str:
-    """Format P&L summary response.
-
-    Args:
-        total_pnl: Total profit/loss value.
-        period: Time period description.
-
-    Returns:
-        Formatted response string.
-    """
-    # Determine if profit or loss
-    status = "profit" if total_pnl > 0 else "loss"
-
-    response = f"**P&L Summary for {period}**\n\n"
-    response += f"Total: ${abs(total_pnl):,.2f} ({status})\n"
-
-    return response
-
-
-def _format_pnl_breakdown(breakdown: dict[str, float], year: str | None) -> str:
-    """Format P&L breakdown response.
-
-    Args:
-        breakdown: Dictionary of ledger groups and amounts.
-        year: Year filter if applicable.
-
-    Returns:
-        Formatted response string.
-    """
-    period = f"year {year}" if year else "all periods"
-
-    response = f"**P&L Breakdown for {period}**\n\n"
-
-    # Separate revenue and expenses
-    revenue_items = []
-    expense_items = []
-
-    for category, amount in breakdown.items():
-        if amount > 0:
-            revenue_items.append((category, amount))
-        else:
-            expense_items.append((category, abs(amount)))
-
-    # Sort by amount
-    revenue_items.sort(key=lambda x: x[1], reverse=True)
-    expense_items.sort(key=lambda x: x[1], reverse=True)
-
-    # Format revenue
-    if revenue_items:
-        response += "**Revenue:**\n"
-        total_revenue = sum(amt for _, amt in revenue_items)
-        for category, amount in revenue_items:
-            response += f"- {category.replace('_', ' ').title()}: ${amount:,.2f}\n"
-        response += f"- **Total Revenue: ${total_revenue:,.2f}**\n\n"
-
-    # Format expenses
-    if expense_items:
-        response += "**Expenses:**\n"
-        total_expenses = sum(amt for _, amt in expense_items)
-        for category, amount in expense_items:
-            response += f"- {category.replace('_', ' ').title()}: ${amount:,.2f}\n"
-        response += f"- **Total Expenses: ${total_expenses:,.2f}**\n\n"
-
-    # Net profit/loss
-    total_pnl = sum(breakdown.values())
-    status = "Profit" if total_pnl > 0 else "Loss"
-    response += f"**Net {status}: ${abs(total_pnl):,.2f}**"
-
-    return response
