@@ -165,20 +165,17 @@ def main() -> None:
         # Add user message to history
         st.session_state.messages.append({"role": "user", "content": query})
 
-        # Display user message
-        with st.chat_message("user"):
-            st.markdown(query)
-
         # Process query and get response
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                st.session_state.processing = True
-                response = process_query(query)
-                st.markdown(response)
-                st.session_state.processing = False
+        with st.spinner("Thinking..."):
+            st.session_state.processing = True
+            response = process_query(query)
+            st.session_state.processing = False
 
         # Add assistant response to history
         st.session_state.messages.append({"role": "assistant", "content": response})
+
+        # Rerun to display new messages through display_chat_history
+        st.rerun()
 
 
 if __name__ == "__main__":
